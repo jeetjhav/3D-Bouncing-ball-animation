@@ -56,6 +56,59 @@ void CMyRaytraceRenderer::RendererTranslate(double x, double y, double z)
 	m_mstack.back() *= r;
 }
 
+CGrPoint CMyRaytraceRenderer::RayColor(CRay ray)
+{
+	double t;                                   // Will be distance to intersection
+	CGrPoint intersect;                         // Will by x,y,z location of intersection
+	const CRayIntersection::Object* nearest;    // Pointer to intersecting object
+	CGrPoint color = { 0., 0., 0. };
+	if (m_intersection.Intersect(ray, 1e20, NULL, nearest, t, intersect))
+	{
+		// We hit something...
+		// Determine information about the intersection
+		CGrPoint N;
+		CGrMaterial* material;
+		CGrTexture* texture;
+		CGrPoint texcoord;
+
+		m_intersection.IntersectInfo(ray, nearest, t,
+			N, material, texture, texcoord);
+
+		if (material != NULL)
+		{
+			int lightCnt = this->LightCnt();
+			Light light = this->GetLight(0);
+
+			float lightInt = 0.7; // TO DO
+
+			CGrPoint s = Normalize3(light.m_pos); // Light Dir
+			CGrPoint v = Normalize3(-intersect); // View Dir
+			CGrPoint n = Normalize3(N); // Normal Vector
+			CGrPoint h = Normalize3(v + s); // Halfway Vector
+
+			CGrPoint ambient = { light.m_ambient[0] * material->Ambient(0),
+								 light.m_ambient[1] * material->Ambient(1),
+								 light.m_ambient[2] * material->Ambient(2) };
+
+			float diffuse_x = light.m_diffuse[0] * material->Diffuse(0) * lightInt * max(0.f, Dot3(n, s));
+			float diffuse_y = light.m_diffuse[1] * material->Diffuse(1) * lightInt * max(0.f, Dot3(n, s));
+			float diffuse_z = light.m_diffuse[2] * material->Diffuse(2) * lightInt * max(0.f, Dot3(n, s));
+
+			CGrPoint diffuse = { diffuse_x , diffuse_y , diffuse_z };
+
+			float spec_x = light.m_specular[0] * material->Specular(0) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+			float spec_y = light.m_specular[1] * material->Specular(1) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+			float spec_z = light.m_specular[2] * material->Specular(2) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+
+			CGrPoint specular = { spec_x , spec_y , spec_z };
+
+			color = ambient + diffuse + specular;
+		}
+	}
+
+	return color;
+}
+
 //
 // Name : CMyRaytraceRenderer::RendererEndPolygon()
 // Description : End definition of a polygon. The superclass has
@@ -123,65 +176,12 @@ bool CMyRaytraceRenderer::RendererEnd()
 			// Construct a Ray
 			CRay ray(CGrPoint(0, 0, 0), Normalize3(CGrPoint(x, y, -1, 0)));
 
-			double t;                                   // Will be distance to intersection
-			CGrPoint intersect;                         // Will by x,y,z location of intersection
-			const CRayIntersection::Object* nearest;    // Pointer to intersecting object
-			if (m_intersection.Intersect(ray, 1e20, NULL, nearest, t, intersect))
-			{
-				// We hit something...
-				// Determine information about the intersection
-				CGrPoint N;
-				CGrMaterial* material;
-				CGrTexture* texture;
-				CGrPoint texcoord;
+			CGrPoint color = RayColor(ray);
 
-				m_intersection.IntersectInfo(ray, nearest, t,
-					N, material, texture, texcoord);
+			m_rayimage[r][c * 3] = BYTE(color[0] * 255);
+			m_rayimage[r][c * 3 + 1] = BYTE(color[1] * 255);
+			m_rayimage[r][c * 3 + 2] = BYTE(color[2] * 255);
 
-				if (material != NULL)
-				{
-					int lightCnt = this->LightCnt();
-					Light light = this->GetLight(0);
-
-					float lightInt = 0.7; // TO DO
-
-					CGrPoint s = Normalize3(light.m_pos); // Light Dir
-					CGrPoint v = Normalize3(-intersect); // View Dir
-					CGrPoint n = Normalize3(N); // Normal Vector
-					CGrPoint h = Normalize3(v + s); // Halfway Vector
-
-					CGrPoint ambient = { light.m_ambient[0] * material->Ambient(0), 
-										 light.m_ambient[1] * material->Ambient(1), 
-										 light.m_ambient[2] * material->Ambient(2) };
-
-					float diffuse_x = light.m_diffuse[0] * material->Diffuse(0) * lightInt * max(0.f, Dot3(n, s));
-					float diffuse_y = light.m_diffuse[1] * material->Diffuse(1) * lightInt * max(0.f, Dot3(n, s));
-					float diffuse_z = light.m_diffuse[2] * material->Diffuse(2) * lightInt * max(0.f, Dot3(n, s));
-
-					CGrPoint diffuse = { diffuse_x , diffuse_y , diffuse_z };
-
-					float spec_x = light.m_specular[0] * material->Specular(0) * pow(max(0.f, Dot3(n, h)), material->Shininess());
-					float spec_y = light.m_specular[1] * material->Specular(1) * pow(max(0.f, Dot3(n, h)), material->Shininess());
-					float spec_z = light.m_specular[2] * material->Specular(2) * pow(max(0.f, Dot3(n, h)), material->Shininess());
-
-					CGrPoint specular = { spec_x , spec_y , spec_z };
-
-					CGrPoint color = ambient + diffuse + specular;
-
-					m_rayimage[r][c * 3] = BYTE(color[0] * 255);
-					m_rayimage[r][c * 3 + 1] = BYTE(color[1] * 255);
-					m_rayimage[r][c * 3 + 2] = BYTE(color[2] * 255);
-
-				}
-
-			}
-			else
-			{
-				// We hit nothing...
-				m_rayimage[r][c * 3] = 0;
-				m_rayimage[r][c * 3 + 1] = 0;
-				m_rayimage[r][c * 3 + 2] = 0;
-			}
 		}
 		if ((r % 50) == 0)
 		{
