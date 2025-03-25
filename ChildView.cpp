@@ -1,4 +1,3 @@
-
 // ChildView.cpp : implementation of the CChildView class
 //
 
@@ -45,12 +44,24 @@ CChildView::CChildView()
 	texturedMaterial->AmbientAndDiffuse(1.0f, 1.0f, 1.0f);
 	scene->Child(texturedMaterial);
 
-
-
 	//texture pointer
 	CGrPtr<CGrComposite> texturedBox = new CGrComposite();
 	texturedMaterial->Child(texturedBox);
-	texturedBox->Box(-15, 0, 0, 5, 5, 5, texture);
+	texturedBox->Cylinder(-15, 2.5, 0, 2.5, 5.0, 32, texture);
+
+
+	// floor 
+	CGrPtr<CGrMaterial> floormaterial = new CGrMaterial;
+	floormaterial->AmbientAndDiffuse(0.6f, 0.6f, 0.6f);  
+	scene->Child(floormaterial);
+
+	CGrPtr<CGrComposite> floor = new CGrComposite;
+	floormaterial->Child(floor);
+
+	floor->Box(-50, -15, -50, 100, 1, 100);
+	
+
+
 	// A white box
 	CGrPtr<CGrMaterial> whitepaint = new CGrMaterial;
 	whitepaint->AmbientAndDiffuse(0.8f, 0.8f, 0.8f);
