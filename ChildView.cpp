@@ -29,13 +29,13 @@ CChildView::CChildView()
 	m_scene = scene;
 
 	// A red box
-	CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
-	redpaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
-	scene->Child(redpaint);
+	//CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
+	//redpaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
+	//scene->Child(redpaint);
 
-	CGrPtr<CGrComposite> redbox = new CGrComposite;
-	redpaint->Child(redbox);
-	redbox->Box(1, 1, 1, 5, 5, 5);
+	//CGrPtr<CGrComposite> redbox = new CGrComposite;
+	//redpaint->Child(redbox);
+	//redbox->Box(1, 1, 1, 5, 5, 5);
 
 	// A white box
 	CGrPtr<CGrMaterial> whitepaint = new CGrMaterial;
@@ -62,7 +62,16 @@ CChildView::CChildView()
 
 	CGrPtr<CGrComposite> bluetetrahedron = new CGrComposite;
 	bluepaint->Child(bluetetrahedron);
-	bluetetrahedron->Tetrahedron(3.0, 7.0, 5.0, 5.0, NULL);
+	bluetetrahedron->Tetrahedron(3.0, 3.0, 5.0, 5.0, NULL);
+
+	//A red pyramid
+	CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
+	redpaint->AmbientAndDiffuse(0.8f, 0.0f, 0.0f);
+	scene->Child(redpaint);
+
+	CGrPtr<CGrComposite> redpyramid = new CGrComposite;
+	redpaint->Child(redpyramid);
+	redpyramid->Pyramid(10., 6.0, 10.0, 5.0, 5.0, 5.0, NULL);
 
 
 
