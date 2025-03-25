@@ -785,25 +785,38 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     }
     Child(poly);
 }
-
-void CGrComposite::Tetrahedron(double x, double y, double z, double size, CGrTexture* p_texture)
+void CGrComposite::Pyramid(double x, double y, double z, double dx, double dy, double dz, CGrTexture* p_texture)
 {
     CGrPtr<CGrPolygon> poly;
 
-    // Coordinates of the 4 vertices of the tetrahedron
-    double v1x = x, v1y = y, v1z = z;
-    double v2x = x + size, v2y = y, v2z = z;
-    double v3x = x + size / 2.0, v3y = y + size * sqrt(3) / 2.0, v3z = z;
-    double v4x = x + size / 2.0, v4y = y + size / sqrt(3), v4z = z + size * sqrt(6) / sqrt(3);
+    // Apex of the pyramid (centered above the base)
+    double apexX = x + dx / 2;
+    double apexY = y + dy;
+    double apexZ = z + dz / 2;
 
-    // Define the 4 triangular faces of the tetrahedron
-
-    // Front face (v1, v2, v3)
+    // Base (same as the bottom face of the box)
     poly = new CGrPolygon;
-    poly->AddNormal3d(0, 0, 1);  // Normal pointing outward
-    poly->AddVertex3d(v1x, v1y, v1z);
-    poly->AddVertex3d(v2x, v2y, v2z);
-    poly->AddVertex3d(v3x, v3y, v3z);
+    poly->AddNormal3d(0, -1, 0);
+    poly->AddVertex3d(x, y, z);
+    poly->AddVertex3d(x + dx, y, z);
+    poly->AddVertex3d(x + dx, y, z + dz);
+    poly->AddVertex3d(x, y, z + dz);
+    if (p_texture)
+    {
+        poly->Texture(p_texture);
+        poly->AddTex2d(0, 0);
+        poly->AddTex2d(1, 0);
+        poly->AddTex2d(1, 1);
+        poly->AddTex2d(0, 1);
+    }
+    Child(poly);
+
+    // Front face
+    poly = new CGrPolygon;
+    poly->AddNormal3d(0, 0.5, 1);
+    poly->AddVertex3d(x, y, z + dz);
+    poly->AddVertex3d(x + dx, y, z + dz);
+    poly->AddVertex3d(apexX, apexY, apexZ);
     if (p_texture)
     {
         poly->Texture(p_texture);
@@ -813,27 +826,12 @@ void CGrComposite::Tetrahedron(double x, double y, double z, double size, CGrTex
     }
     Child(poly);
 
-    // Right face (v1, v3, v4)
+    // Right face
     poly = new CGrPolygon;
-    poly->AddNormal3d(1, 0, 0);  // Normal pointing outward
-    poly->AddVertex3d(v1x, v1y, v1z);
-    poly->AddVertex3d(v3x, v3y, v3z);
-    poly->AddVertex3d(v4x, v4y, v4z);
-    if (p_texture)
-    {
-        poly->Texture(p_texture);
-        poly->AddTex2d(0, 0);
-        poly->AddTex2d(0.5, 1);
-        poly->AddTex2d(1, 0);
-    }
-    Child(poly);
-
-    // Left face (v2, v4, v3)
-    poly = new CGrPolygon;
-    poly->AddNormal3d(0, -1, 0);  // Normal pointing outward
-    poly->AddVertex3d(v2x, v2y, v2z);
-    poly->AddVertex3d(v4x, v4y, v4z);
-    poly->AddVertex3d(v3x, v3y, v3z);
+    poly->AddNormal3d(1, 0.5, 0);
+    poly->AddVertex3d(x + dx, y, z + dz);
+    poly->AddVertex3d(x + dx, y, z);
+    poly->AddVertex3d(apexX, apexY, apexZ);
     if (p_texture)
     {
         poly->Texture(p_texture);
@@ -843,12 +841,27 @@ void CGrComposite::Tetrahedron(double x, double y, double z, double size, CGrTex
     }
     Child(poly);
 
-    // Bottom face (v1, v2, v4)
+    // Back face
     poly = new CGrPolygon;
-    poly->AddNormal3d(0, 1, 0);  // Normal pointing outward
-    poly->AddVertex3d(v1x, v1y, v1z);
-    poly->AddVertex3d(v2x, v2y, v2z);
-    poly->AddVertex3d(v4x, v4y, v4z);
+    poly->AddNormal3d(0, 0.5, -1);
+    poly->AddVertex3d(x + dx, y, z);
+    poly->AddVertex3d(x, y, z);
+    poly->AddVertex3d(apexX, apexY, apexZ);
+    if (p_texture)
+    {
+        poly->Texture(p_texture);
+        poly->AddTex2d(0, 0);
+        poly->AddTex2d(1, 0);
+        poly->AddTex2d(0.5, 1);
+    }
+    Child(poly);
+
+    // Left face
+    poly = new CGrPolygon;
+    poly->AddNormal3d(-1, 0.5, 0);
+    poly->AddVertex3d(x, y, z);
+    poly->AddVertex3d(x, y, z + dz);
+    poly->AddVertex3d(apexX, apexY, apexZ);
     if (p_texture)
     {
         poly->Texture(p_texture);
@@ -858,6 +871,77 @@ void CGrComposite::Tetrahedron(double x, double y, double z, double size, CGrTex
     }
     Child(poly);
 }
+
+void CGrComposite::Tetrahedron(double x, double y, double z, double size, CGrTexture* p_texture)
+{
+    CGrPtr<CGrPolygon> poly;
+
+    // Base vertices (equilateral triangle)
+    double x1 = x, y1 = y, z1 = z;
+    double x2 = x + size, y2 = y, z2 = z;
+    double x3 = x + size / 2, y3 = y, z3 = z + sqrt(3) / 2 * size;
+
+    // Apex vertex
+    double ax = x + size / 2, ay = y + sqrt(2.0 / 3.0) * size, az = z + sqrt(3) / 6 * size;
+
+    // Base Triangle (counterclockwise order)
+    poly = new CGrPolygon;
+    poly->AddVertex3d(x1, y1, z1);
+    poly->AddVertex3d(x2, y2, z2);
+    poly->AddVertex3d(x3, y3, z3);
+    if (p_texture)
+    {
+        poly->Texture(p_texture);
+        poly->AddTex2d(0, 0);
+        poly->AddTex2d(1, 0);
+        poly->AddTex2d(0.5, 1);
+    }
+    Child(poly);
+
+    // Side Triangle 1
+    poly = new CGrPolygon;
+    poly->AddVertex3d(x1, y1, z1);
+    poly->AddVertex3d(x2, y2, z2);
+    poly->AddVertex3d(ax, ay, az);
+    if (p_texture)
+    {
+        poly->Texture(p_texture);
+        poly->AddTex2d(0, 0);
+        poly->AddTex2d(1, 0);
+        poly->AddTex2d(0.5, 1);
+    }
+    Child(poly);
+
+    // Side Triangle 2
+    poly = new CGrPolygon;
+    poly->AddVertex3d(x2, y2, z2);
+    poly->AddVertex3d(x3, y3, z3);
+    poly->AddVertex3d(ax, ay, az);
+    if (p_texture)
+    {
+        poly->Texture(p_texture);
+        poly->AddTex2d(0, 0);
+        poly->AddTex2d(1, 0);
+        poly->AddTex2d(0.5, 1);
+    }
+    Child(poly);
+
+    // Side Triangle 3
+    poly = new CGrPolygon;
+    poly->AddVertex3d(x3, y3, z3);
+    poly->AddVertex3d(x1, y1, z1);
+    poly->AddVertex3d(ax, ay, az);
+    if (p_texture)
+    {
+        poly->Texture(p_texture);
+        poly->AddTex2d(0, 0);
+        poly->AddTex2d(1, 0);
+        poly->AddTex2d(0.5, 1);
+    }
+    Child(poly);
+}
+
+
 
 //
 // Name :         CGrComposite::SlantBox()
