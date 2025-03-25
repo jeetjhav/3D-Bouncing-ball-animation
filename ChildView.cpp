@@ -8,10 +8,13 @@
 #include "ChildView.h"
 #include "graphics/OpenGLRenderer.h"
 #include "CMyRaytraceRenderer.h"
+#include "graphics/GrTexture.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
 
 // CChildView
 
@@ -50,7 +53,7 @@ CChildView::CChildView()
 
 	CGrPtr<CGrComposite> greensphere = new CGrComposite;
 	greenpaint->Child(greensphere);
-	greensphere->Sphere(0.0,-4.0,0.0,5.0,8, 5,NULL);
+	greensphere->Sphere(0.0, -4.0, 0.0, 5.0, 8, 5, NULL);
 
 	//A blue Tetrahedron
 	CGrPtr<CGrMaterial> bluepaint = new CGrMaterial;
@@ -61,8 +64,29 @@ CChildView::CChildView()
 	bluepaint->Child(bluetetrahedron);
 	bluetetrahedron->Tetrahedron(3.0, 7.0, 5.0, 5.0, NULL);
 
-}
 
+
+	// TEXTURE ON CUBE
+	CGrPtr<CGrTexture> texture = new CGrTexture();
+	texture->LoadFile(L"textures/marble10.bmp");
+
+	CGrPtr<CGrMaterial> texturedMaterial = new CGrMaterial();
+	texturedMaterial->AmbientAndDiffuse(1.0f, 1.0f, 1.0f);
+	scene->Child(texturedMaterial);
+
+	//texture pointer
+	CGrPtr<CGrComposite> texturedBox = new CGrComposite();
+	texturedMaterial->Child(texturedBox);
+	texturedBox->Box(-15, 0, 0, 5, 5, 5, texture);  
+
+
+
+
+
+	
+
+
+}
 
 CChildView::~CChildView()
 {
@@ -77,6 +101,7 @@ BEGIN_MESSAGE_MAP(CChildView, COpenGLWnd)
 	ON_COMMAND(ID_RENDER_RAYTRACE, &CChildView::OnRenderRaytrace)
 	ON_UPDATE_COMMAND_UI(ID_RENDER_RAYTRACE, &CChildView::OnUpdateRenderRaytrace)
 END_MESSAGE_MAP()
+
 
 
 // CChildView message handlers
@@ -141,7 +166,6 @@ void CChildView::OnGLDraw(CDC* pDC)
 		renderer.Render(m_scene);
 	}
 }
-
 
 void CChildView::OnLButtonDown(UINT nFlags, CPoint point)
 {
@@ -265,6 +289,3 @@ void CChildView::OnUpdateRenderRaytrace(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_raytrace);
 }
-
-
-
