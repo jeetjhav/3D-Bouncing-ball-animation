@@ -77,15 +77,7 @@ CChildView::CChildView()
 	//texture pointer
 	CGrPtr<CGrComposite> texturedBox = new CGrComposite();
 	texturedMaterial->Child(texturedBox);
-	texturedBox->Box(-15, 0, 0, 5, 5, 5, texture);  
-
-
-
-
-
-	
-
-
+	texturedBox->Box(-15, 0, 0, 5, 5, 5, texture);
 }
 
 CChildView::~CChildView()
@@ -106,15 +98,15 @@ END_MESSAGE_MAP()
 
 // CChildView message handlers
 
-BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs) 
+BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if (!COpenGLWnd::PreCreateWindow(cs))
 		return FALSE;
 
 	cs.dwExStyle |= WS_EX_CLIENTEDGE;
 	cs.style &= ~WS_BORDER;
-	cs.lpszClass = AfxRegisterWndClass(CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS, 
-		::LoadCursor(nullptr, IDC_ARROW), reinterpret_cast<HBRUSH>(COLOR_WINDOW+1), nullptr);
+	cs.lpszClass = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
+		::LoadCursor(nullptr, IDC_ARROW), reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1), nullptr);
 
 	return TRUE;
 }
@@ -230,10 +222,14 @@ void CChildView::ConfigureRenderer(CGrRenderer* p_renderer)
 
 	float dimd = 0.5f;
 	GLfloat dim[] = { dimd, dimd, dimd, 1.0f };
-	GLfloat brightwhite[] = { 1.f, 1.f, 1.f, 1.0f };
+	GLfloat coolgreen[] = { 0.f, 1.f, 0.5f, 1.0f };
+	GLfloat moodred[] = { 1.f, 0.f, 0.3f, 1.0f };
 
-	p_renderer->AddLight(CGrPoint(1, 0.5, 1.2, 0),
-		dim, brightwhite, brightwhite);
+	p_renderer->AddLight(CGrPoint(-1, -4.5, 1.2, 0),
+		dim, coolgreen, coolgreen);
+
+	p_renderer->AddLight(CGrPoint(-1, -0.5, -2.2, 0),
+		dim, moodred, moodred);
 }
 
 
@@ -268,7 +264,7 @@ void CChildView::OnRenderRaytrace()
 			m_rayimage[i][j * 3 + 2] = BYTE(255);   // blue
 		}
 	}
-	
+
 	// Instantiate a raytrace object
 	CMyRaytraceRenderer raytrace;
 
