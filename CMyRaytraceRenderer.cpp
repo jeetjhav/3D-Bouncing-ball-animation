@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CMyRaytraceRenderer.h"
+#include "graphics/GrTexture.h"
 
 void CMyRaytraceRenderer::SetWindow(CWnd* p_window)
 {
@@ -56,12 +57,23 @@ void CMyRaytraceRenderer::RendererTranslate(double x, double y, double z)
 	m_mstack.back() *= r;
 }
 
+// Checks if shadow is there or not
+bool CMyRaytraceRenderer::ShadowFeeler(CGrPoint intersect, Light light, const CRayIntersection::Object* nearest, double t)
+{
+	CRay lightRay(intersect, Normalize3(m_mstack.back() * light.m_pos)); // Initialize the renderer and the matrix stack (tutorial 9th)
+	const CRayIntersection::Object* lightNearest;
+
+	if (m_intersection.Intersect(lightRay, 1e20, nearest, lightNearest, t, intersect)) return true;
+	else return false;
+}
+
 CGrPoint CMyRaytraceRenderer::RayColor(CRay ray)
 {
 	double t;                                   // Will be distance to intersection
 	CGrPoint intersect;                         // Will by x,y,z location of intersection
 	const CRayIntersection::Object* nearest;    // Pointer to intersecting object
 	CGrPoint color = { 0., 0., 0. };
+
 	if (m_intersection.Intersect(ray, 1e20, NULL, nearest, t, intersect))
 	{
 		// We hit something...
@@ -77,32 +89,56 @@ CGrPoint CMyRaytraceRenderer::RayColor(CRay ray)
 		if (material != NULL)
 		{
 			int lightCnt = this->LightCnt();
-			Light light = this->GetLight(0);
 
 			float lightInt = 0.7; // TO DO
 
-			CGrPoint s = Normalize3(light.m_pos); // Light Dir
-			CGrPoint v = Normalize3(-intersect); // View Dir
-			CGrPoint n = Normalize3(N); // Normal Vector
-			CGrPoint h = Normalize3(v + s); // Halfway Vector
+			Light light = this->GetLight(0);
 
 			CGrPoint ambient = { light.m_ambient[0] * material->Ambient(0),
 								 light.m_ambient[1] * material->Ambient(1),
 								 light.m_ambient[2] * material->Ambient(2) };
 
-			float diffuse_x = light.m_diffuse[0] * material->Diffuse(0) * lightInt * max(0.f, Dot3(n, s));
-			float diffuse_y = light.m_diffuse[1] * material->Diffuse(1) * lightInt * max(0.f, Dot3(n, s));
-			float diffuse_z = light.m_diffuse[2] * material->Diffuse(2) * lightInt * max(0.f, Dot3(n, s));
+			if (texture != nullptr)
+			{
+				double tex = double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 0]) / 255.0;
 
-			CGrPoint diffuse = { diffuse_x , diffuse_y , diffuse_z };
+				ambient = { ambient[0] * tex, ambient[1] * tex, ambient[2] * tex };
+			}
 
-			float spec_x = light.m_specular[0] * material->Specular(0) * pow(max(0.f, Dot3(n, h)), material->Shininess());
-			float spec_y = light.m_specular[1] * material->Specular(1) * pow(max(0.f, Dot3(n, h)), material->Shininess());
-			float spec_z = light.m_specular[2] * material->Specular(2) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+			color += ambient;
 
-			CGrPoint specular = { spec_x , spec_y , spec_z };
+			for (int l = 0; l < lightCnt; l++)
+			{
+				if (ShadowFeeler(intersect, light, nearest, t) == false)
+				{
+					light = this->GetLight(l);
+					CGrPoint s = Normalize3(light.m_pos); // Light Dir
+					CGrPoint v = Normalize3(-intersect); // View Dir
+					CGrPoint n = Normalize3(N); // Normal Vector
+					CGrPoint h = Normalize3(v + s); // Halfway Vector
 
-			color = ambient + diffuse + specular;
+					float diffuse_x = light.m_diffuse[0] * material->Diffuse(0) * lightInt * max(0.f, Dot3(n, s));
+					float diffuse_y = light.m_diffuse[1] * material->Diffuse(1) * lightInt * max(0.f, Dot3(n, s));
+					float diffuse_z = light.m_diffuse[2] * material->Diffuse(2) * lightInt * max(0.f, Dot3(n, s));
+
+					CGrPoint diffuse = { diffuse_x , diffuse_y , diffuse_z };
+
+					if (texture != nullptr)
+					{
+						double tex = double(texture->Row(texcoord.Y() * texture->Height())[3 * int((texcoord.X() * texture->Width())) + 0]) / 255.0;
+
+						diffuse = { tex * diffuse_x , tex * diffuse_y , tex * diffuse_z };
+					}
+
+					float spec_x = light.m_specular[0] * material->Specular(0) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+					float spec_y = light.m_specular[1] * material->Specular(1) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+					float spec_z = light.m_specular[2] * material->Specular(2) * pow(max(0.f, Dot3(n, h)), material->Shininess());
+
+					CGrPoint specular = { spec_x , spec_y , spec_z };
+
+					color += diffuse + specular;
+				}
+			}
 		}
 	}
 
