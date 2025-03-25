@@ -37,6 +37,20 @@ CChildView::CChildView()
 	//redpaint->Child(redbox);
 	//redbox->Box(1, 1, 1, 5, 5, 5);
 
+		// TEXTURE ON CUBE
+	CGrPtr<CGrTexture> texture = new CGrTexture();
+	texture->LoadFile(L"textures/marble10.bmp");
+
+	CGrPtr<CGrMaterial> texturedMaterial = new CGrMaterial();
+	texturedMaterial->AmbientAndDiffuse(1.0f, 1.0f, 1.0f);
+	scene->Child(texturedMaterial);
+
+
+
+	//texture pointer
+	CGrPtr<CGrComposite> texturedBox = new CGrComposite();
+	texturedMaterial->Child(texturedBox);
+	texturedBox->Box(-15, 0, 0, 5, 5, 5, texture);
 	// A white box
 	CGrPtr<CGrMaterial> whitepaint = new CGrMaterial;
 	whitepaint->AmbientAndDiffuse(0.8f, 0.8f, 0.8f);
@@ -53,7 +67,7 @@ CChildView::CChildView()
 
 	CGrPtr<CGrComposite> greensphere = new CGrComposite;
 	greenpaint->Child(greensphere);
-	greensphere->Sphere(0.0, -4.0, 0.0, 5.0, 8, 5, NULL);
+	greensphere->Sphere(0.0, -4.0, 0.0, 5.0, 8, 5, texture);
 
 	//A blue Tetrahedron
 	CGrPtr<CGrMaterial> bluepaint = new CGrMaterial;
@@ -62,7 +76,7 @@ CChildView::CChildView()
 
 	CGrPtr<CGrComposite> bluetetrahedron = new CGrComposite;
 	bluepaint->Child(bluetetrahedron);
-	bluetetrahedron->Tetrahedron(3.0, 3.0, 5.0, 5.0, NULL);
+	bluetetrahedron->Tetrahedron(3.0, 3.0, 5.0, 5.0, texture);
 
 	//A red pyramid
 	CGrPtr<CGrMaterial> redpaint = new CGrMaterial;
@@ -71,22 +85,11 @@ CChildView::CChildView()
 
 	CGrPtr<CGrComposite> redpyramid = new CGrComposite;
 	redpaint->Child(redpyramid);
-	redpyramid->Pyramid(10., 6.0, 10.0, 5.0, 5.0, 5.0, NULL);
+	redpyramid->Pyramid(10., 6.0, 10.0, 5.0, 5.0, 5.0, texture);
 
 
 
-	// TEXTURE ON CUBE
-	CGrPtr<CGrTexture> texture = new CGrTexture();
-	texture->LoadFile(L"textures/marble10.bmp");
 
-	CGrPtr<CGrMaterial> texturedMaterial = new CGrMaterial();
-	texturedMaterial->AmbientAndDiffuse(1.0f, 1.0f, 1.0f);
-	scene->Child(texturedMaterial);
-
-	//texture pointer
-	CGrPtr<CGrComposite> texturedBox = new CGrComposite();
-	texturedMaterial->Child(texturedBox);
-	texturedBox->Box(-15, 0, 0, 5, 5, 5, texture);
 }
 
 CChildView::~CChildView()
