@@ -4,7 +4,7 @@
 
 void CMyRaytraceRenderer::SetWindow(CWnd* p_window)
 {
-    m_window = p_window;
+	m_window = p_window;
 }
 
 bool CMyRaytraceRenderer::RendererStart()
@@ -153,44 +153,49 @@ CGrPoint CMyRaytraceRenderer::RayColor(CRay ray)
 
 void CMyRaytraceRenderer::RendererEndPolygon()
 {
-    const std::list<CGrPoint>& vertices = PolyVertices();
-    const std::list<CGrPoint>& normals = PolyNormals();
-    const std::list<CGrPoint>& tvertices = PolyTexVertices();
+	const std::list<CGrPoint>& vertices = PolyVertices();
+	const std::list<CGrPoint>& normals = PolyNormals();
+	const std::list<CGrPoint>& tvertices = PolyTexVertices();
 
-    // Allocate a new polygon in the ray intersection system
-    m_intersection.PolygonBegin();
-    m_intersection.Material(m_material);
+	// Allocate a new polygon in the ray intersection system
+	m_intersection.PolygonBegin();
+	m_intersection.Material(m_material);
 
-    if (PolyTexture())
-    {
-        m_intersection.Texture(PolyTexture());
-    }
+	if (PolyTexture())
+	{
+		m_intersection.Texture(PolyTexture());
+	}
 
-    std::list<CGrPoint>::const_iterator normal = normals.begin();
-    std::list<CGrPoint>::const_iterator tvertex = tvertices.begin();
+	std::list<CGrPoint>::const_iterator normal = normals.begin();
+	std::list<CGrPoint>::const_iterator tvertex = tvertices.begin();
 
-    for (std::list<CGrPoint>::const_iterator i = vertices.begin(); i != vertices.end(); i++)
-    {
-        if (normal != normals.end())
-        {
-            m_intersection.Normal(m_mstack.back() * *normal);
-            normal++;
-        }
+	for (std::list<CGrPoint>::const_iterator i = vertices.begin(); i != vertices.end(); i++)
+	{
+		if (normal != normals.end())
+		{
+			m_intersection.Normal(m_mstack.back() * *normal);
+			normal++;
+		}
 
-        if (tvertex != tvertices.end())
-        {
-            m_intersection.TexVertex(*tvertex);
-            tvertex++;
-        }
+		if (tvertex != tvertices.end())
+		{
+			m_intersection.TexVertex(*tvertex);
+			tvertex++;
+		}
 
-        m_intersection.Vertex(m_mstack.back() * *i);
-    }
+		m_intersection.Vertex(m_mstack.back() * *i);
+	}
 
-    m_intersection.PolygonEnd();
+	m_intersection.PolygonEnd();
 }
 
 bool CMyRaytraceRenderer::RendererEnd()
 {
+
+	const int numSamples = 5; //for motion blur
+	const double timeRange = 1.0;  // for motion blur
+
+
 	m_intersection.LoadingComplete();
 
 	double ymin = -tan(ProjectionAngle() / 2 * GR_DTOR);
@@ -212,7 +217,23 @@ bool CMyRaytraceRenderer::RendererEnd()
 			// Construct a Ray
 			CRay ray(CGrPoint(0, 0, 0), Normalize3(CGrPoint(x, y, -1, 0)));
 
-			CGrPoint color = RayColor(ray);
+
+			//motion blur 
+			CGrPoint color(0, 0, 0);
+			for (int s = 0; s < numSamples; s++)
+			{
+				// Generate time offset (could also randomize within range)
+				double timeOffset = -timeRange / 2 + (timeRange / (numSamples - 1)) * s;
+
+				// Move the object or ray origin slightly (simulate motion)
+				CRay motionRay(CGrPoint(timeOffset, 0, 0), Normalize3(CGrPoint(x, y, -1, 0))); // shifts ray origin in X over time
+
+				color += RayColor(motionRay);
+			}
+			color[0] /= double(numSamples);
+			color[1] /= double(numSamples);
+			color[2] /= double(numSamples);
+
 
 			m_rayimage[r][c * 3] = BYTE(color[0] * 255);
 			m_rayimage[r][c * 3 + 1] = BYTE(color[1] * 255);
@@ -231,3 +252,4 @@ bool CMyRaytraceRenderer::RendererEnd()
 
 	return true;
 }
+
