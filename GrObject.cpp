@@ -8,7 +8,7 @@
 
 #ifdef _DEBUG
 #undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
+static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
@@ -32,38 +32,38 @@ CGrPolygon::CGrPolygon()
 }
 
 
-void CGrPolygon::Texture(CGrTexture *p_texture)
+void CGrPolygon::Texture(CGrTexture* p_texture)
 {
     m_texture = p_texture;
 }
 
-CGrPolygon::CGrPolygon(double *a, double *b, double *c, double *d)
+CGrPolygon::CGrPolygon(double* a, double* b, double* c, double* d)
 {
     m_vertices.push_back(CGrPoint(a[0], a[1], a[2]));
     m_vertices.push_back(CGrPoint(b[0], b[1], b[2]));
     m_vertices.push_back(CGrPoint(c[0], c[1], c[2]));
-    if(d)
+    if (d)
         m_vertices.push_back(CGrPoint(d[0], d[1], d[2]));
 }
 
 CGrPolygon::~CGrPolygon() {}
 
-void CGrPolygon::AddVertices3(const double *a, const double *b, const double *c, bool p_computenormal)
+void CGrPolygon::AddVertices3(const double* a, const double* b, const double* c, bool p_computenormal)
 {
     m_vertices.push_back(CGrPoint(a[0], a[1], a[2]));
     m_vertices.push_back(CGrPoint(b[0], b[1], b[2]));
     m_vertices.push_back(CGrPoint(c[0], c[1], c[2]));
-    if(p_computenormal)
+    if (p_computenormal)
         ComputeNormal();
 }
 
-void CGrPolygon::AddVertices4(const double *a, const double *b, const double *c, const double *d, bool p_computenormal)
+void CGrPolygon::AddVertices4(const double* a, const double* b, const double* c, const double* d, bool p_computenormal)
 {
     m_vertices.push_back(CGrPoint(a[0], a[1], a[2]));
     m_vertices.push_back(CGrPoint(b[0], b[1], b[2]));
     m_vertices.push_back(CGrPoint(c[0], c[1], c[2]));
     m_vertices.push_back(CGrPoint(d[0], d[1], d[2]));
-    if(p_computenormal)
+    if (p_computenormal)
         ComputeNormal();
 }
 
@@ -82,18 +82,18 @@ void CGrPolygon::ComputeNormal()
 
     CGrPoint normal(0, 0, 0, 0);        // Zero the normal we are computing
     std::list<CGrPoint>::iterator coord = m_vertices.begin();
-    for( ; coord != m_vertices.end();  coord++)
+    for (; coord != m_vertices.end(); coord++)
     {
-        std::list<CGrPoint>::iterator coordnext = coord; 
+        std::list<CGrPoint>::iterator coordnext = coord;
         coordnext++;
 
-        if(coordnext == m_vertices.end())
+        if (coordnext == m_vertices.end())
             coordnext = m_vertices.begin();
 
         // Now, coord and coordnext are two sequential vertex 
         // pointers.
-        CGrPoint &v1 = *coord;
-        CGrPoint &v2 = *coordnext;
+        CGrPoint& v1 = *coord;
+        CGrPoint& v2 = *coordnext;
 
         normal[0] -= (v1[2] + v2[2]) * (v2[1] - v1[1]);
         normal[1] -= (v1[0] + v2[0]) * (v2[2] - v1[2]);
@@ -101,12 +101,12 @@ void CGrPolygon::ComputeNormal()
     }
 
     // Normalize
-    double len=sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
-    if(len != 0.0)
+    double len = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+    if (len != 0.0)
     {
-        normal[0]/=len;
-        normal[1]/=len;
-        normal[2]/=len;
+        normal[0] /= len;
+        normal[1] /= len;
+        normal[2] /= len;
     }
 
     // Put into the list of normals
@@ -131,7 +131,7 @@ void CGrPolygon::AddNormal3d(double x, double y, double z)
     m_normals.back().Normalize3();
 }
 
-void CGrPolygon::AddNormal3dv(double *p)
+void CGrPolygon::AddNormal3dv(double* p)
 {
     m_normals.push_back(CGrPoint(p[0], p[1], p[2], 0));
     m_normals.back().Normalize3();
@@ -148,7 +148,7 @@ void CGrPolygon::AddNormal3dv(double *p)
 
 void CGrPolygon::glRender()
 {
-    if(m_texture)
+    if (m_texture)
     {
         glEnable(GL_TEXTURE_2D);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -159,15 +159,15 @@ void CGrPolygon::glRender()
     list<CGrPoint>::iterator tvertices = m_tvertices.begin();
 
     glBegin(GL_POLYGON);
-    for(list<CGrPoint>::iterator i=m_vertices.begin();  i!=m_vertices.end();  i++)
+    for (list<CGrPoint>::iterator i = m_vertices.begin(); i != m_vertices.end(); i++)
     {
-        if(normals != m_normals.end())
+        if (normals != m_normals.end())
         {
             normals->glNormal();
             normals++;
         }
 
-        if(tvertices != m_tvertices.end())
+        if (tvertices != m_tvertices.end())
         {
             tvertices->glTexVertex();
             tvertices++;
@@ -178,7 +178,7 @@ void CGrPolygon::glRender()
 
     glEnd();
 
-    if(m_texture)
+    if (m_texture)
     {
         glDisable(GL_TEXTURE_2D);
     }
@@ -186,25 +186,25 @@ void CGrPolygon::glRender()
 }
 
 
-void CGrPolygon::Render(CGrRenderer *p_renderer)
+void CGrPolygon::Render(CGrRenderer* p_renderer)
 {
     p_renderer->RendererBeginPolygon();
 
-    if(m_texture)
+    if (m_texture)
         p_renderer->RendererTexture(m_texture);
 
     list<CGrPoint>::iterator normals = m_normals.begin();
     list<CGrPoint>::iterator tvertices = m_tvertices.begin();
 
-    for(list<CGrPoint>::iterator i=m_vertices.begin();  i!=m_vertices.end();  i++)
+    for (list<CGrPoint>::iterator i = m_vertices.begin(); i != m_vertices.end(); i++)
     {
-        if(normals != m_normals.end())
+        if (normals != m_normals.end())
         {
             p_renderer->RendererNormal(*normals);
             normals++;
         }
 
-        if(tvertices != m_tvertices.end())
+        if (tvertices != m_tvertices.end())
         {
             p_renderer->RendererTexVertex(*tvertices);
             tvertices++;
@@ -247,9 +247,9 @@ void CGrPolygon::RectXY(double x, double y, double z, double dx, double dy)
 void CGrPolygon::RectYZ(double x, double y, double z, double dy, double dz)
 {
     AddVertex3d(x, y, z);
-    AddVertex3d(x, y, z+dz);
-    AddVertex3d(x, y+dy, z+dz);
-    AddVertex3d(x, y+dy, z);
+    AddVertex3d(x, y, z + dz);
+    AddVertex3d(x, y + dy, z + dz);
+    AddVertex3d(x, y + dy, z);
     AddNormal3d((dy > 0) == (dz > 0) ? -1. : 1., 0., 0.);
 }
 
@@ -264,9 +264,9 @@ void CGrPolygon::RectYZ(double x, double y, double z, double dy, double dz)
 void CGrPolygon::RectZX(double x, double y, double z, double dz, double dx)
 {
     AddVertex3d(x, y, z);
-    AddVertex3d(x+dx, y, z);
-    AddVertex3d(x+dx, y, z+dz);
-    AddVertex3d(x, y, z+dz);
+    AddVertex3d(x + dx, y, z);
+    AddVertex3d(x + dx, y, z + dz);
+    AddVertex3d(x, y, z + dz);
     AddNormal3d(0, (dx > 0) == (dz > 0) ? -1. : 1., 0.);
 }
 
@@ -284,15 +284,15 @@ CGrColor::~CGrColor() {}
 void CGrColor::glRender()
 {
     glColor4dv(c);
-    if(m_child)
+    if (m_child)
         m_child->glRender();
 }
 
 
-void CGrColor::Render(CGrRenderer *p_renderer)
+void CGrColor::Render(CGrRenderer* p_renderer)
 {
     p_renderer->RendererColor(c);
-    if(m_child)
+    if (m_child)
         m_child->Render(p_renderer);
 }
 
@@ -305,14 +305,14 @@ CGrComposite::~CGrComposite() {}
 
 void CGrComposite::glRender()
 {
-    for(list<CGrPtr<CGrObject> >::iterator i=m_children.begin();  i!=m_children.end();  i++)
+    for (list<CGrPtr<CGrObject> >::iterator i = m_children.begin(); i != m_children.end(); i++)
         (*i)->glRender();
 }
 
 
-void CGrComposite::Render(CGrRenderer *p_renderer)
+void CGrComposite::Render(CGrRenderer* p_renderer)
 {
-    for(list<CGrPtr<CGrObject> >::iterator i=m_children.begin();  i!=m_children.end();  i++)
+    for (list<CGrPtr<CGrObject> >::iterator i = m_children.begin(); i != m_children.end(); i++)
         (*i)->Render(p_renderer);
 }
 
@@ -325,7 +325,7 @@ CGrTranslate::~CGrTranslate() {}
 
 void CGrTranslate::glRender()
 {
-    if(m_child)
+    if (m_child)
     {
         glPushMatrix();
         glTranslated(m_x, m_y, m_z);
@@ -335,9 +335,9 @@ void CGrTranslate::glRender()
 }
 
 
-void CGrTranslate::Render(CGrRenderer *p_renderer)
+void CGrTranslate::Render(CGrRenderer* p_renderer)
 {
-    if(m_child)
+    if (m_child)
     {
         p_renderer->RendererPushMatrix();
         p_renderer->RendererTranslate(m_x, m_y, m_z);
@@ -354,7 +354,7 @@ CGrSgTransform::~CGrSgTransform() {}
 
 void CGrSgTransform::glRender()
 {
-    if(m_child)
+    if (m_child)
     {
         glPushMatrix();
         CGrTransform::glMultMatrix();
@@ -364,9 +364,9 @@ void CGrSgTransform::glRender()
 }
 
 
-void CGrSgTransform::Render(CGrRenderer *p_renderer)
+void CGrSgTransform::Render(CGrRenderer* p_renderer)
 {
-    if(m_child)
+    if (m_child)
     {
         p_renderer->RendererPushMatrix();
         p_renderer->RendererTransform(this);
@@ -385,7 +385,7 @@ CGrRotate::~CGrRotate() {}
 
 void CGrRotate::glRender()
 {
-    if(m_child)
+    if (m_child)
     {
         glPushMatrix();
         glRotated(m_angle, m_x, m_y, m_z);
@@ -395,9 +395,9 @@ void CGrRotate::glRender()
 }
 
 
-void CGrRotate::Render(CGrRenderer *p_renderer)
+void CGrRotate::Render(CGrRenderer* p_renderer)
 {
-    if(m_child)
+    if (m_child)
     {
         p_renderer->RendererPushMatrix();
         p_renderer->RendererRotate(m_angle, m_x, m_y, m_z);
@@ -422,7 +422,7 @@ CGrMaterial::CGrMaterial(float dr, float dg, float db, float da)
     m_diffuse[0] = dr;  m_diffuse[1] = dg;  m_diffuse[2] = db;  m_diffuse[3] = da;
 }
 
-CGrMaterial::CGrMaterial(float dr, float dg, float db, CGrObject *p_child)
+CGrMaterial::CGrMaterial(float dr, float dg, float db, CGrObject* p_child)
 {
     Clear();
     m_diffuse[0] = dr;  m_diffuse[1] = dg;  m_diffuse[2] = db;  m_diffuse[3] = 1.f;
@@ -438,7 +438,7 @@ CGrMaterial::CGrMaterial(float dr, float dg, float db, float sr, float sg, float
     m_specular[0] = sr; m_specular[1] = sg; m_specular[2] = sb; m_specular[3] = 1.f;
 }
 
-CGrMaterial::CGrMaterial(float dr, float dg, float db, float sr, float sg, float sb, CGrObject *p_child)
+CGrMaterial::CGrMaterial(float dr, float dg, float db, float sr, float sg, float sb, CGrObject* p_child)
 {
     Clear();
 
@@ -453,21 +453,21 @@ CGrMaterial::~CGrMaterial() {}
 
 void CGrMaterial::Clear()
 {
-	for(int c=0;  c<4;  c++)
-	{
-		m_diffuse[c] = 0.f;
-		m_specular[c] = 0.f;
-		m_specularother[c] = 0.f;
-		m_ambient[c] = 0.f;
-		m_emission[c] = 0.f;
-	}
-	m_shininess = 1.f;
+    for (int c = 0; c < 4; c++)
+    {
+        m_diffuse[c] = 0.f;
+        m_specular[c] = 0.f;
+        m_specularother[c] = 0.f;
+        m_ambient[c] = 0.f;
+        m_emission[c] = 0.f;
+    }
+    m_shininess = 1.f;
 }
 
 
-void CGrMaterial::AmbientDiffuseSpecularShininess(const float *a, const float *d, const float *s, float sh)
+void CGrMaterial::AmbientDiffuseSpecularShininess(const float* a, const float* d, const float* s, float sh)
 {
-    for(int i=0;  i<4;  i++)
+    for (int i = 0; i < 4; i++)
     {
         m_ambient[i] = a[i];
         m_diffuse[i] = d[i];
@@ -478,25 +478,25 @@ void CGrMaterial::AmbientDiffuseSpecularShininess(const float *a, const float *d
 }
 
 
-void CGrMaterial::Emissive(const float *e)
+void CGrMaterial::Emissive(const float* e)
 {
-    for(int i=0;  i<4;  i++)
+    for (int i = 0; i < 4; i++)
         m_emission[i] = e[i];
 }
 
 void CGrMaterial::glRender()
 {
-    if(m_child)
+    if (m_child)
     {
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, m_diffuse);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, m_diffuse);
 
-            glMaterialfv(GL_FRONT, GL_SPECULAR, m_specular);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, m_specular);
 
-            glMaterialfv(GL_FRONT, GL_AMBIENT, m_ambient);
+        glMaterialfv(GL_FRONT, GL_AMBIENT, m_ambient);
 
-            glMaterialfv(GL_FRONT, GL_EMISSION, m_emission);
+        glMaterialfv(GL_FRONT, GL_EMISSION, m_emission);
 
-            glMaterialfv(GL_FRONT, GL_SHININESS, &m_shininess);
+        glMaterialfv(GL_FRONT, GL_SHININESS, &m_shininess);
 
         m_child->glRender();
     }
@@ -512,9 +512,9 @@ void CGrMaterial::glMaterial()
 }
 
 
-void CGrMaterial::Render(CGrRenderer *p_renderer)
+void CGrMaterial::Render(CGrRenderer* p_renderer)
 {
-    if(m_child)
+    if (m_child)
     {
         p_renderer->RendererMaterial(this);
 
@@ -535,10 +535,10 @@ void CGrMaterial::Standard(enum Standards s)
     int c;
     Clear();
 
-    switch(s)
+    switch (s)
     {
     case allblack:
-        for(c=0;  c<3;  c++)
+        for (c = 0; c < 3; c++)
         {
             m_diffuse[c] = 0.f;
             m_specular[c] = 0.f;
@@ -555,7 +555,7 @@ void CGrMaterial::Standard(enum Standards s)
 
     case texture:
         // Standard for texture is white diffuse
-        for(c=0;  c<3;  c++)
+        for (c = 0; c < 3; c++)
         {
             m_diffuse[c] = 1.f;
             m_specular[c] = 0.f;
@@ -589,18 +589,18 @@ void CGrMaterial::Standard(enum Standards s)
 //                t = y / yd + to
 //
 
-void CGrComposite::AddMappedRect(CGrTexture *p_texture, double x1, double y1, 
-                                 double x2, double y2, double xd, double yd,
-                                 double so, double to)
+void CGrComposite::AddMappedRect(CGrTexture* p_texture, double x1, double y1,
+    double x2, double y2, double xd, double yd,
+    double so, double to)
 {
     CGrPtr<CGrPolygon> poly = new CGrPolygon;
 
     poly->Texture(p_texture);
     poly->AddNormal3d(0, 0, 1);
-    poly->AddTexVertex3d(x1, y1, 0, x1/xd + so, y1/yd + to);
-    poly->AddTexVertex3d(x2, y1, 0, x2/xd + so, y1/yd + to);
-    poly->AddTexVertex3d(x2, y2, 0, x2/xd + so, y2/yd + to);
-    poly->AddTexVertex3d(x1, y2, 0, x1/xd + so, y2/yd + to);
+    poly->AddTexVertex3d(x1, y1, 0, x1 / xd + so, y1 / yd + to);
+    poly->AddTexVertex3d(x2, y1, 0, x2 / xd + so, y1 / yd + to);
+    poly->AddTexVertex3d(x2, y2, 0, x2 / xd + so, y2 / yd + to);
+    poly->AddTexVertex3d(x1, y2, 0, x1 / xd + so, y2 / yd + to);
 
     // Add to this composite.
     Child(poly);
@@ -679,7 +679,7 @@ void CGrComposite::Sphere(double cx, double cy, double cz, double radius, int sl
 //                This box will not have a texture applied to it.
 //
 
-void CGrComposite::Box(double x, double y, double z, double dx, double dy, double dz, CGrTexture *p_texture)
+void CGrComposite::Box(double x, double y, double z, double dx, double dy, double dz, CGrTexture* p_texture)
 {
     CGrPtr<CGrPolygon> poly;
 
@@ -690,7 +690,7 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     poly->AddVertex3d(x + dx, y, z + dz);
     poly->AddVertex3d(x + dx, y + dy, z + dz);
     poly->AddVertex3d(x, y + dy, z + dz);
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -707,7 +707,7 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     poly->AddVertex3d(x + dx, y, z);
     poly->AddVertex3d(x + dx, y + dy, z);
     poly->AddVertex3d(x + dx, y + dy, z + dz);
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -724,7 +724,7 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     poly->AddVertex3d(x, y, z);
     poly->AddVertex3d(x, y + dy, z);
     poly->AddVertex3d(x + dx, y + dy, z);
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -741,7 +741,7 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     poly->AddVertex3d(x, y, z + dz);
     poly->AddVertex3d(x, y + dy, z + dz);
     poly->AddVertex3d(x, y + dy, z);
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -758,7 +758,7 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     poly->AddVertex3d(x + dx, y + dy, z + dz);
     poly->AddVertex3d(x + dx, y + dy, z);
     poly->AddVertex3d(x, y + dy, z);
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -775,7 +775,7 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     poly->AddVertex3d(x + dx, y, z);
     poly->AddVertex3d(x + dx, y, z + dz);
     poly->AddVertex3d(x, y, z + dz);
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -785,6 +785,9 @@ void CGrComposite::Box(double x, double y, double z, double dx, double dy, doubl
     }
     Child(poly);
 }
+
+
+
 void CGrComposite::Pyramid(double x, double y, double z, double dx, double dy, double dz, CGrTexture* p_texture)
 {
     CGrPtr<CGrPolygon> poly;
@@ -871,6 +874,104 @@ void CGrComposite::Pyramid(double x, double y, double z, double dx, double dy, d
     }
     Child(poly);
 }
+
+
+//Cylinder
+void CGrComposite::Cylinder(double cx, double cy, double cz, double radius, double height, int slices, CGrTexture* p_texture)
+{
+    CGrPtr<CGrPolygon> poly;
+    double M_PI = 4 * atan(1);
+    double halfHeight = height / 2.0;
+    double topY = cy + halfHeight;
+    double bottomY = cy - halfHeight;
+
+    // --- Side faces ---
+    for (int i = 0; i < slices; i++)
+    {
+        double theta1 = 2 * M_PI * i / slices;
+        double theta2 = 2 * M_PI * (i + 1) / slices;
+
+        double x1 = cx + radius * cos(theta1);
+        double z1 = cz + radius * sin(theta1);
+        double x2 = cx + radius * cos(theta2);
+        double z2 = cz + radius * sin(theta2);
+
+        poly = new CGrPolygon;
+        poly->AddVertex3d(x1, bottomY, z1);
+        poly->AddVertex3d(x1, topY, z1);
+        poly->AddVertex3d(x2, topY, z2);
+        poly->AddVertex3d(x2, bottomY, z2);
+        poly->ComputeNormal();
+
+        if (p_texture)
+        {
+            poly->Texture(p_texture);
+            poly->AddTex2d(i / (double)slices, 0);
+            poly->AddTex2d(i / (double)slices, 1);
+            poly->AddTex2d((i + 1) / (double)slices, 1);
+            poly->AddTex2d((i + 1) / (double)slices, 0);
+        }
+
+        Child(poly);
+    }
+
+    // --- Top cap ---
+    for (int i = 0; i < slices; i++)
+    {
+        double theta1 = 2.0 * M_PI * i / slices;
+        double theta2 = 2.0 * M_PI * (i + 1) / slices;
+
+        double x1 = cx + radius * cos(theta1);
+        double z1 = cz + radius * sin(theta1);
+        double x2 = cx + radius * cos(theta2);
+        double z2 = cz + radius * sin(theta2);
+
+        CGrPtr<CGrPolygon> cap = new CGrPolygon;
+        cap->AddNormal3d(0, 1, 0); // upward
+        cap->AddVertex3d(cx, topY, cz);  // center
+        cap->AddVertex3d(x1, topY, z1);
+        cap->AddVertex3d(x2, topY, z2);
+
+        if (p_texture)
+        {
+            cap->Texture(p_texture);
+            cap->AddTex2d(0.5, 0.5);
+            cap->AddTex2d(0.5 + 0.5 * cos(theta1), 0.5 + 0.5 * sin(theta1));
+            cap->AddTex2d(0.5 + 0.5 * cos(theta2), 0.5 + 0.5 * sin(theta2));
+        }
+
+        Child(cap);
+    }
+
+    // --- Bottom cap ---
+    for (int i = 0; i < slices; i++)
+    {
+        double theta1 = 2.0 * M_PI * i / slices;
+        double theta2 = 2.0 * M_PI * (i + 1) / slices;
+
+        double x1 = cx + radius * cos(theta1);
+        double z1 = cz + radius * sin(theta1);
+        double x2 = cx + radius * cos(theta2);
+        double z2 = cz + radius * sin(theta2);
+
+        CGrPtr<CGrPolygon> cap = new CGrPolygon;
+        cap->AddNormal3d(0, -1, 0); // downward
+        cap->AddVertex3d(cx, bottomY, cz);  // center
+        cap->AddVertex3d(x2, bottomY, z2);
+        cap->AddVertex3d(x1, bottomY, z1);
+
+        if (p_texture)
+        {
+            cap->Texture(p_texture);
+            cap->AddTex2d(0.5, 0.5);
+            cap->AddTex2d(0.5 + 0.5 * cos(theta2), 0.5 + 0.5 * sin(theta2));
+            cap->AddTex2d(0.5 + 0.5 * cos(theta1), 0.5 + 0.5 * sin(theta1));
+        }
+
+        Child(cap);
+    }
+}
+
 
 void CGrComposite::Tetrahedron(double x, double y, double z, double size, CGrTexture* p_texture)
 {
@@ -1010,14 +1111,14 @@ void CGrComposite::SlantBox(double x, double y, double z, double dx, double dy, 
 }
 
 
-void CGrComposite::Poly3(const CGrPoint &a, const CGrPoint &b, 
-                         const CGrPoint &c, CGrTexture *p_texture)
+void CGrComposite::Poly3(const CGrPoint& a, const CGrPoint& b,
+    const CGrPoint& c, CGrTexture* p_texture)
 {
     CGrPtr<CGrPolygon> poly = new CGrPolygon;
     poly->AddVertices3(a, b, c, true);
     Child(poly);
 
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
@@ -1027,14 +1128,14 @@ void CGrComposite::Poly3(const CGrPoint &a, const CGrPoint &b,
 
 }
 
-void CGrComposite::Poly4(const CGrPoint &a, const CGrPoint &b, 
-                         const CGrPoint &c, const CGrPoint &d, CGrTexture *p_texture)
+void CGrComposite::Poly4(const CGrPoint& a, const CGrPoint& b,
+    const CGrPoint& c, const CGrPoint& d, CGrTexture* p_texture)
 {
     CGrPtr<CGrPolygon> poly = new CGrPolygon;
     poly->AddVertices4(a, b, c, d, true);
     Child(poly);
 
-    if(p_texture)
+    if (p_texture)
     {
         poly->Texture(p_texture);
         poly->AddTex2d(0, 0);
