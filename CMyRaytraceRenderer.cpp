@@ -73,6 +73,12 @@ CGrPoint CMyRaytraceRenderer::RayColor(CRay ray)
 	CGrPoint intersect;                         // Will by x,y,z location of intersection
 	const CRayIntersection::Object* nearest;    // Pointer to intersecting object
 	CGrPoint color = { 0., 0., 0. };
+	//fog color
+	CGrPoint fogColor(0.3, 0.3, 0.4);  // light gray fog
+	double fogDensity = 0.015;           // increase this to exaggerate the fog effect
+
+	
+
 
 	if (m_intersection.Intersect(ray, 1e20, NULL, nearest, t, intersect))
 	{
@@ -137,8 +143,30 @@ CGrPoint CMyRaytraceRenderer::RayColor(CRay ray)
 					CGrPoint specular = { spec_x , spec_y , spec_z };
 
 					color += diffuse + specular;
+
+
 				}
+				
 			}
+			//for fog
+			
+			//double fogFactor = exp(-fogDensity * t);  // exponential falloff
+			double maxFogDistance = 100.0;
+			double fogFactor = (maxFogDistance - t) / maxFogDistance;
+			if (fogFactor < 0.0)
+				fogFactor = 0.0;
+			if (fogFactor > 1.0)
+				fogFactor = 1.0;
+
+
+			color = CGrPoint(
+				fogFactor * color[0] + (1.0 - fogFactor) * fogColor[0],
+				fogFactor * color[1] + (1.0 - fogFactor) * fogColor[1],
+				fogFactor * color[2] + (1.0 - fogFactor) * fogColor[2]);
+				
+			
+
+
 		}
 	}
 
@@ -233,6 +261,9 @@ bool CMyRaytraceRenderer::RendererEnd()
 			color[0] /= double(numSamples);
 			color[1] /= double(numSamples);
 			color[2] /= double(numSamples);
+
+			
+
 
 
 			m_rayimage[r][c * 3] = BYTE(color[0] * 255);
