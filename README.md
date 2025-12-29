@@ -22,7 +22,7 @@ The ball’s position is updated each frame based on velocity and gravity. When 
 
 ## Purpose
 
-This project was created to practice and demonstrate fundamentals of computer graphics, animation, and physics-based motion.
+This project was created to practice and demonstrate fundamentals of computer graphics, animation, and physics-based motion. This projects was done as a final for our CSE 472 Computer graphics course at MSU
 
 ## Future Improvements
 
